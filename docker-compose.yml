@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  # ── MySQL Database ──────────────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: greencircle-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: greencircle
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-rootpassword}
+      MYSQL_USER: ${DB_USER:-greencircle}
+      MYSQL_PASSWORD: ${DB_PASS:-greencirclepass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── Spring Boot Backend ─────────────────────────────────────────────────────
+  backend:
+    build: .
+    container_name: greencircle-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://db:3306/greencircle?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USER: ${DB_USER:-greencircle}
+      DB_PASS: ${DB_PASS:-greencirclepass}
+      DB_DRIVER: com.mysql.cj.jdbc.Driver
+      DDL_AUTO: validate
+      HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+      SQL_INIT_MODE: never
+      JWT_SECRET: ${JWT_SECRET:-changethisinsecretvalue32charsminimum}
+      ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-http://localhost:5173}
+    ports:
+      - "8080:8080"
+
+volumes:
+  db_data:
