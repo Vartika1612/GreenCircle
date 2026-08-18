@@ -6,7 +6,7 @@ import CategoryFilter from '../components/CategoryFilter'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 
-export default function ProductCatalog() {
+export default function Products() {
   const [products, setProducts]   = useState([])
   const [search, setSearch]       = useState('')
   const [category, setCategory]   = useState('')

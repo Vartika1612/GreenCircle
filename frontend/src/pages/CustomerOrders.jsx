@@ -5,7 +5,7 @@ import OrderStatusBadge from '../components/OrderStatusBadge'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 
-export default function OrderHistory() {
+export default function CustomerOrders() {
   const [orders, setOrders]   = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState('')

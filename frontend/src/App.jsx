@@ -7,10 +7,10 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import ProductCatalog from './pages/ProductCatalog'
+import Products from './pages/Products'
 import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
-import OrderHistory from './pages/OrderHistory'
+import CustomerOrders from './pages/CustomerOrders'
 import OrderDetail from './pages/OrderDetail'
 import FarmerDashboard from './pages/FarmerDashboard'
 import FarmerProducts from './pages/FarmerProducts'
@@ -27,7 +27,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/products" element={<ProductCatalog />} />
+            <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductDetail />} />
 
             {/* Customer routes */}
@@ -36,7 +36,7 @@ export default function App() {
               path="/orders"
               element={
                 <ProtectedRoute role="CUSTOMER">
-                  <OrderHistory />
+                  <CustomerOrders />
                 </ProtectedRoute>
               }
             />
