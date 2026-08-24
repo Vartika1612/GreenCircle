@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 
 const CATEGORY_EMOJI = {
   VEGETABLES: '🥦', FRUITS: '🍎', GRAINS: '🌾',
@@ -8,6 +9,7 @@ const CATEGORY_EMOJI = {
 
 export default function ProductCard({ product }) {
   const { isCustomer, addToCart } = useAuth()
+  const toast = useToast()
 
   const stockStatus =
     product.stock === 0   ? 'out' :
@@ -15,7 +17,9 @@ export default function ProductCard({ product }) {
 
   function handleAddToCart(e) {
     e.preventDefault()
+    e.stopPropagation()
     addToCart(product, 1)
+    toast?.addToast(`${product.name} added to cart!`, 'success')
   }
 
   return (
@@ -27,6 +31,7 @@ export default function ProductCard({ product }) {
             <img
               src={`${import.meta.env.VITE_S3_BASE_URL || ''}/${product.imageKey}`}
               alt={product.name}
+              loading="lazy"
             />
           ) : (
             <div className="product-card-emoji">
@@ -34,7 +39,12 @@ export default function ProductCard({ product }) {
             </div>
           )}
           <div className="product-card-badges">
-            <span className="badge badge-organic">🌱 Organic</span>
+            {product.isOrganic !== false && (
+              <span className="badge badge-organic">🌱 Organic</span>
+            )}
+            {stockStatus === 'low' && (
+              <span className="badge badge-yellow" style={{ fontSize: '0.65rem' }}>Low Stock</span>
+            )}
           </div>
         </div>
 
@@ -59,7 +69,6 @@ export default function ProductCard({ product }) {
                 className="btn btn-primary btn-sm"
                 onClick={handleAddToCart}
                 id={`add-to-cart-${product.id}`}
-                disabled={stockStatus === 'out'}
               >
                 + Cart
               </button>

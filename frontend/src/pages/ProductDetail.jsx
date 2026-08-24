@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { getProductById } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 
@@ -12,8 +13,8 @@ const CATEGORY_EMOJI = {
 
 export default function ProductDetail() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const { isCustomer, addToCart } = useAuth()
+  const toast = useToast()
 
   const [product, setProduct] = useState(null)
   const [qty, setQty]         = useState(1)
@@ -32,6 +33,7 @@ export default function ProductDetail() {
     if (!product) return
     addToCart(product, qty)
     setAdded(true)
+    toast?.addToast(`${qty} × ${product.name} added to cart!`, 'success')
     setTimeout(() => setAdded(false), 2000)
   }
 
@@ -70,6 +72,11 @@ export default function ProductDetail() {
               <span className="badge badge-green" style={{ marginBottom: 'var(--space-2)' }}>
                 {product.category}
               </span>
+              {product.isOrganic !== false && (
+                <span className="badge badge-organic" style={{ marginLeft: 'var(--space-2)' }}>
+                  🌱 Organic
+                </span>
+              )}
               <h1 style={{ marginTop: 'var(--space-2)' }}>{product.name}</h1>
               <p style={{ marginTop: 'var(--space-2)' }}>
                 {product.description || 'Fresh, locally grown organic produce.'}
@@ -87,7 +94,7 @@ export default function ProductDetail() {
             <div className="product-meta">
               <div className="product-meta-row">
                 <span className="product-meta-label">Grown by</span>
-                <span className="product-meta-value">{product.farmer?.name}</span>
+                <span className="product-meta-value">🧑‍🌾 {product.farmer?.name}</span>
               </div>
               {product.farmer?.location && (
                 <div className="product-meta-row">
@@ -97,7 +104,7 @@ export default function ProductDetail() {
               )}
               <div className="product-meta-row">
                 <span className="product-meta-label">Stock available</span>
-                <span className="product-meta-value">
+                <span className="product-meta-value" style={{ color: product.stock < 10 ? 'var(--warning)' : 'inherit' }}>
                   {product.stock > 0 ? `${product.stock} ${product.unit}s` : 'Out of Stock'}
                 </span>
               </div>
@@ -110,21 +117,25 @@ export default function ProductDetail() {
                   <button
                     className="qty-btn"
                     onClick={() => setQty(q => Math.max(1, q - 1))}
+                    aria-label="Decrease quantity"
                   >−</button>
                   <span className="qty-value" style={{ width: '36px' }}>{qty}</span>
                   <button
                     className="qty-btn"
                     onClick={() => setQty(q => Math.min(product.stock, q + 1))}
+                    aria-label="Increase quantity"
                   >+</button>
                 </div>
 
                 <button
-                  className="btn btn-primary btn-lg"
+                  className={`btn btn-lg${added ? ' btn-success' : ' btn-primary'}`}
                   onClick={handleAddToCart}
                   style={{ flex: 1 }}
                   id="add-to-cart-detail-btn"
                 >
-                  {added ? '✓ Added to Cart!' : `Add to Cart — $${(parseFloat(product.price) * qty).toFixed(2)}`}
+                  {added
+                    ? '✓ Added to Cart!'
+                    : `Add to Cart — $${(parseFloat(product.price) * qty).toFixed(2)}`}
                 </button>
               </div>
             )}
@@ -133,10 +144,13 @@ export default function ProductDetail() {
               <div className="error-message">This product is currently out of stock.</div>
             )}
 
-            {!isCustomer && (
-              <p style={{ fontSize: '0.875rem', color: 'var(--neutral-500)' }}>
-                Sign in as a Customer to add this product to your cart.
-              </p>
+            {!isCustomer && product.stock > 0 && (
+              <div style={{ padding: 'var(--space-4)', background: 'var(--green-50)', borderRadius: 'var(--radius)', textAlign: 'center' }}>
+                <p style={{ marginBottom: 'var(--space-3)', fontSize: '0.9375rem' }}>
+                  Sign in as a Customer to add this product to your cart.
+                </p>
+                <Link to="/login" className="btn btn-primary btn-sm">Sign In →</Link>
+              </div>
             )}
           </div>
         </div>

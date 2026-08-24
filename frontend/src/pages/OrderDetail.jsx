@@ -5,6 +5,32 @@ import OrderStatusBadge from '../components/OrderStatusBadge'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 
+const STATUS_STEPS = ['PLACED', 'CONFIRMED', 'COMPLETED']
+const STATUS_ICONS = { PLACED: '📋', CONFIRMED: '✅', COMPLETED: '🎉' }
+const STATUS_LABELS = { PLACED: 'Order Placed', CONFIRMED: 'Confirmed', COMPLETED: 'Delivered' }
+
+function OrderTimeline({ status }) {
+  const currentIdx = STATUS_STEPS.indexOf(status)
+  return (
+    <div className="order-timeline">
+      {STATUS_STEPS.map((step, idx) => (
+        <div
+          key={step}
+          className={`timeline-step${idx <= currentIdx ? ' done' : ''}${idx === currentIdx ? ' current' : ''}`}
+        >
+          <div className="timeline-dot">
+            <span>{STATUS_ICONS[step]}</span>
+          </div>
+          <div className="timeline-label">{STATUS_LABELS[step]}</div>
+          {idx < STATUS_STEPS.length - 1 && (
+            <div className={`timeline-line${idx < currentIdx ? ' done' : ''}`} />
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function OrderDetail() {
   const { id } = useParams()
   const location = useLocation()
@@ -29,7 +55,7 @@ export default function OrderDetail() {
     <div className="page">
       <div className="container" style={{ maxWidth: '720px' }}>
         {justPlaced && (
-          <div className="success-message" style={{ marginBottom: 'var(--space-6)' }}>
+          <div className="success-message" style={{ marginBottom: 'var(--space-6)', fontSize: '1rem' }}>
             🎉 <strong>Order Placed Successfully!</strong> Thank you for supporting local organic farming.
           </div>
         )}
@@ -46,6 +72,12 @@ export default function OrderDetail() {
           <OrderStatusBadge status={order.status} />
         </div>
 
+        {/* Order Timeline */}
+        <div className="card" style={{ padding: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
+          <h3 style={{ marginBottom: 'var(--space-6)' }}>Order Status</h3>
+          <OrderTimeline status={order.status} />
+        </div>
+
         {/* Items Card */}
         <div className="card" style={{ padding: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
           <h3 style={{ marginBottom: 'var(--space-4)' }}>Items Ordered</h3>
@@ -55,7 +87,8 @@ export default function OrderDetail() {
               key={item.id || idx}
               style={{
                 display: 'flex',
-                justify-content: 'space-between',
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 padding: 'var(--space-3) 0',
                 borderBottom: idx < order.items.length - 1 ? '1px solid var(--neutral-100)' : 'none'
               }}
@@ -77,7 +110,7 @@ export default function OrderDetail() {
             paddingTop: 'var(--space-4)',
             borderTop: '2px solid var(--neutral-200)',
             display: 'flex',
-            justify: 'space-between',
+            justifyContent: 'space-between',
             fontSize: '1.125rem',
             fontWeight: 700
           }}>

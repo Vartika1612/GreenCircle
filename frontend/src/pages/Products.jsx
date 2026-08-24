@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
 import { getProducts } from '../services/api'
 import ProductCard from '../components/ProductCard'
+import { SkeletonGrid } from '../components/SkeletonCard'
 import SearchBar from '../components/SearchBar'
 import CategoryFilter from '../components/CategoryFilter'
-import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 
 export default function Products() {
-  const [products, setProducts]   = useState([])
-  const [search, setSearch]       = useState('')
-  const [category, setCategory]   = useState('')
-  const [location, setLocation]   = useState('')
-  const [loading, setLoading]     = useState(true)
-  const [error, setError]         = useState('')
+  const [products, setProducts] = useState([])
+  const [search, setSearch]     = useState('')
+  const [category, setCategory] = useState('')
+  const [location, setLocation] = useState('')
+  const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState('')
 
   useEffect(() => {
     setLoading(true)
@@ -22,6 +22,8 @@ export default function Products() {
       .catch(err => setError(err.message || 'Failed to load products'))
       .finally(() => setLoading(false))
   }, [search, category, location])
+
+  const hasFilters = search || category || location
 
   return (
     <div className="page">
@@ -41,8 +43,8 @@ export default function Products() {
           <input
             type="text"
             className="form-input"
-            style={{ width: '220px' }}
-            placeholder="Filter by location (e.g. Napa)"
+            style={{ width: '220px', flexShrink: 0 }}
+            placeholder="📍 Filter by location…"
             value={location}
             onChange={e => setLocation(e.target.value)}
             id="location-filter"
@@ -53,11 +55,28 @@ export default function Products() {
           <CategoryFilter selected={category} onSelect={setCategory} />
         </div>
 
-        {/* Product list */}
+        {/* Active filters summary */}
+        {hasFilters && !loading && (
+          <div className="filter-summary">
+            <span>
+              {products.length} result{products.length !== 1 ? 's' : ''}
+              {search && <> for "<strong>{search}</strong>"</>}
+              {category && <> in <strong>{category}</strong></>}
+              {location && <> near <strong>{location}</strong></>}
+            </span>
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => { setSearch(''); setCategory(''); setLocation(''); }}
+            >
+              Clear all ✕
+            </button>
+          </div>
+        )}
+
         <ErrorMessage message={error} />
 
         {loading ? (
-          <LoadingSpinner />
+          <SkeletonGrid count={8} />
         ) : products.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">🌱</div>

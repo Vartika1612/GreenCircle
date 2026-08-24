@@ -79,3 +79,5 @@ export const getOrderById = (id)   => get(`/api/orders/${id}`, true)
 export const getFarmerProducts  = () => get('/api/farmer/products',  true)
 export const getFarmerOrders    = () => get('/api/farmer/orders',    true)
 export const getFarmerDashboard = () => get('/api/farmer/dashboard', true)
+
+export const updateOrderStatus  = (id, status) => put(`/api/orders/${id}/status`, { status }, true)
