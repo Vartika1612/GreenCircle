@@ -2,7 +2,7 @@
 
 > **Connecting local organic farmers with their community.**
 
-A full-stack portfolio project built with Spring Boot (Java), React, and MySQL — deployable on AWS free tier.
+A full-stack portfolio project built with Spring Boot (Java), React, and MySQL.
 
 ---
 
@@ -13,7 +13,8 @@ A full-stack portfolio project built with Spring Boot (Java), React, and MySQL �
 | Frontend | React 18, Vite, React Router v6, Plain CSS |
 | Backend | Java 17, Spring Boot 3, Spring Security + JWT |
 | Database | MySQL 8 (prod) / H2 (local dev) |
-| Infra | AWS EC2, RDS, S3, CloudFront |
+| Frontend Deploy | Vercel |
+| Backend Deploy | Render (Docker) |
 | CI/CD | GitHub Actions |
 
 ---
@@ -25,9 +26,8 @@ greencircle/
 ├── backend/          # Spring Boot REST API
 ├── frontend/         # React SPA (Vite)
 ├── database/         # schema.sql + seed data
-├── docs/             # architecture diagram + deployment notes
-├── Dockerfile        # backend container
-├── docker-compose.yml
+├── Dockerfile        # backend container (used by Render)
+├── docker-compose.yml  # local full-stack dev
 └── .github/workflows/ci.yml
 ```
 
@@ -35,20 +35,17 @@ greencircle/
 
 ## Local Development (Docker Compose)
 
-**Prerequisites:** Docker Desktop, Java 17, Node 18+
+**Prerequisites:** Docker Desktop
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/yourname/greencircle.git
-cd greencircle
+git clone https://github.com/Vartika1612/GreenCircle.git
+cd GreenCircle
 
-# 2. Copy env files
-cp .env.example .env           # edit DB password, JWT secret
-
-# 3. Start backend + MySQL
+# 2. Start backend + MySQL
 docker-compose up -d
 
-# 4. Start frontend dev server
+# 3. Start frontend dev server
 cd frontend
 cp .env.example .env.local     # set VITE_API_BASE_URL=http://localhost:8080
 npm install
@@ -85,14 +82,12 @@ npm install && npm run dev
 | `JWT_SECRET` | `dev-secret-change-in-prod` | **Change in production!** |
 | `JWT_EXPIRATION_MS` | `86400000` | 24 hours |
 | `ALLOWED_ORIGIN` | `http://localhost:5173` | Frontend CORS origin |
-| `S3_BUCKET` | `greencircle-images` | S3 bucket for product images |
 
 ### Frontend (`.env.local`)
 
 | Variable | Example | Description |
 |----------|---------|-------------|
 | `VITE_API_BASE_URL` | `http://localhost:8080` | Backend API base URL |
-| `VITE_S3_BASE_URL` | `https://bucket.s3.amazonaws.com` | S3 image base URL |
 
 ---
 
@@ -125,14 +120,40 @@ mvn test
 
 ---
 
-## AWS Deployment
+## Deployment
 
-See [`docs/architecture.md`](docs/architecture.md) for the full deployment guide.
+### Frontend → Vercel
 
-**Summary:**
-- **RDS**: MySQL db.t3.micro — create DB, run `database/schema.sql`
-- **EC2**: t2.micro — install Java 17, run the Spring Boot jar with env vars
-- **S3 + CloudFront**: Upload the Vite `dist/` build; CloudFront in front
+1. Push your code to GitHub.
+2. Go to [vercel.com](https://vercel.com) → **New Project** → Import the repo.
+3. Set **Root Directory** to `frontend`.
+4. Add environment variable: `VITE_API_BASE_URL=https://your-render-backend.onrender.com`
+5. Deploy — Vercel auto-deploys on every push to `main`.
+
+### Backend → Render
+
+1. Go to [render.com](https://render.com) → **New → Web Service**.
+2. Connect your GitHub repo.
+3. Set **Root Directory** to `.` (repo root) and **Dockerfile** as the build method.
+4. Add environment variables:
+
+| Key | Value |
+|-----|-------|
+| `DB_URL` | Your MySQL connection string (e.g. from PlanetScale / Render DB) |
+| `DB_USER` | DB username |
+| `DB_PASS` | DB password |
+| `DB_DRIVER` | `com.mysql.cj.jdbc.Driver` |
+| `DDL_AUTO` | `validate` |
+| `HIBERNATE_DIALECT` | `org.hibernate.dialect.MySQLDialect` |
+| `JWT_SECRET` | A long random secret (min 32 chars) |
+| `ALLOWED_ORIGIN` | Your Vercel frontend URL (e.g. `https://greencircle.vercel.app`) |
+
+5. Render builds and deploys automatically on every push.
+
+### Database → Render MySQL or PlanetScale (free tiers)
+
+- **Render**: Create a free **PostgreSQL** or use an external MySQL provider.
+- **PlanetScale**: Free MySQL-compatible serverless DB — get a connection string and paste into Render env vars.
 
 ---
 
