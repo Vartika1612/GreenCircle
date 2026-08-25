@@ -10,7 +10,6 @@ import com.greencircle.model.*;
 import com.greencircle.repository.OrderRepository;
 import com.greencircle.repository.ProductRepository;
 import com.greencircle.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,12 +17,17 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+
+    public OrderService(OrderRepository orderRepository, ProductRepository productRepository, UserRepository userRepository) {
+        this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
+        this.userRepository = userRepository;
+    }
 
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request, String customerEmail) {
