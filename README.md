@@ -6,6 +6,15 @@ A full-stack portfolio project built with Spring Boot (Java), React, and MySQL.
 
 ---
 
+## ✨ Features
+
+- 🌾 **Farmer dashboard with analytics** — real-time stats on total products, revenue, and pending orders
+- 🔍 **Product search & filtering by location/category** — customers can discover local produce by region and type
+- 🔐 **JWT-based authentication** — secure stateless auth with access tokens and refresh token strategy for both roles
+- 📦 **Order management for both roles** — customers place and track orders; farmers view and manage incoming orders for their products
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -163,6 +172,16 @@ mvn test
 |------|-------|----------|
 | FARMER | farmer@greencircle.com | password123 |
 | CUSTOMER | customer@greencircle.com | password123 |
+
+---
+
+## 🧠 What I Learned
+
+| Topic | Key Takeaway |
+|-------|--------------|
+| **JWT implementation & refresh token strategy** | Learned how to issue short-lived access tokens alongside long-lived refresh tokens, store them securely (HttpOnly cookies / local storage trade-offs), and rotate them on every use to prevent replay attacks. |
+| **Spring Security best practices** | Gained hands-on experience wiring a custom `UserDetailsService`, configuring stateless `SecurityFilterChain`, and applying method-level `@PreAuthorize` guards so that FARMER-only and CUSTOMER-only endpoints are enforced at the service layer — not just the controller. |
+| **Docker multi-container orchestration** | Built a `docker-compose.yml` that spins up MySQL, the Spring Boot API, and (optionally) the React dev server in isolated containers with health-checks and a shared bridge network, eliminating "works on my machine" problems. |
 
 ---
 
