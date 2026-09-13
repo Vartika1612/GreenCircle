@@ -22,7 +22,7 @@ services:
       timeout: 5s
       retries: 10
 
-  # ── Spring Boot Backend ─────────────────────────────────────────────────────
+  # ── FastAPI Backend ─────────────────────────────────────────────────────────
   backend:
     build: .
     container_name: greencircle-backend
@@ -31,14 +31,9 @@ services:
       db:
         condition: service_healthy
     environment:
-      DB_URL: jdbc:mysql://db:3306/greencircle?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      DB_USER: ${DB_USER:-greencircle}
-      DB_PASS: ${DB_PASS:-greencirclepass}
-      DB_DRIVER: com.mysql.cj.jdbc.Driver
-      DDL_AUTO: validate
-      HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
-      SQL_INIT_MODE: never
+      DB_URL: mysql+pymysql://${DB_USER:-greencircle}:${DB_PASS:-greencirclepass}@db:3306/greencircle
       JWT_SECRET: ${JWT_SECRET:-changethisinsecretvalue32charsminimum}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
       ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-http://localhost:5173}
     ports:
       - "8080:8080"

@@ -1,0 +1,1 @@
+# GreenCircle FastAPI backend package

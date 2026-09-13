@@ -1,24 +1,18 @@
-# ── Stage 1: Build ────────────────────────────────────────────────────────────
-FROM maven:3.9-eclipse-temurin-17 AS build
+# ── GreenCircle FastAPI Backend (root Dockerfile) ────────────────────────────
+# This file is kept at the repo root for docker-compose compatibility.
+# It delegates entirely to the Python backend.
+FROM python:3.12-slim
+
 WORKDIR /app
 
-# Copy pom first to cache dependency downloads
-COPY backend/pom.xml .
-RUN mvn dependency:go-offline -q
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source and build
-COPY backend/src ./src
-RUN mvn package -DskipTests -q
+COPY backend/app/ ./app/
 
-# ── Stage 2: Runtime ──────────────────────────────────────────────────────────
-FROM eclipse-temurin:17-jre-alpine
-WORKDIR /app
-
-# Non-root user for security
-RUN addgroup -S greencircle && adduser -S greencircle -G greencircle
+RUN addgroup --system greencircle && adduser --system --ingroup greencircle greencircle
 USER greencircle
 
-COPY --from=build /app/target/*.jar app.jar
-
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
